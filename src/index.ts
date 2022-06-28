@@ -4,27 +4,49 @@ Dotenv.config()
 
 
 async function main(){
-    // // Create 1 keypair to securely store in .env
-    // const newKeypair = web3.Keypair.generate()
-    // console.log(`first keypair: ${newKeypair.secretKey.toString()}`)
-
-    // Create 2nd keypair to store in .env file
-    // const newKeypair2= web3.Keypair.generate()
-    // console.log(`second keypair: ${newKeypair2.secretKey.toString()}`)
-
     
     const senderKey = initializeKeypair(); //pubkey = FbeqyKUvsKuyG1G2kfCqVuQEJrP3dCEeVrXWq8sMtMLX
-    const senderKey2 = initializeKeypair2(); //pubkey = C11t1hJJVDx9cb28bmvviL46LmMEFCwGMnEZ5W2k5inv
-    // // I want to know the pub key when viewing transaction details on solana explorer
-    // console.log(senderKey.publicKey.toString() + "  :   " + senderKey2.publicKey.toString())
+    const receiverKey = initializeKeypair2(); //pubkey = C11t1hJJVDx9cb28bmvviL46LmMEFCwGMnEZ5W2k5inv
 
-    
+    const connection = new web3.Connection(web3.clusterApiUrl('devnet'))
 
+    // use this to airdrop sol to accounts
+    // await connection.requestAirdrop(senderKey.publicKey, web3.LAMPORTS_PER_SOL * 2);
+    const senderKeyBalance = (await connection.getBalance(senderKey.publicKey) / web3.LAMPORTS_PER_SOL)
+    const receiverKeyBalance = (await connection.getBalance(receiverKey.publicKey) / web3.LAMPORTS_PER_SOL)
 
+    //Displays initial balance to the console
+    console.log("---Initial Balance---")
+    console.log("balance: ", senderKeyBalance, "Sol" )
+    console.log("balance: ", receiverKeyBalance, "Sol \n")
 
+    //perform transfer
+    sendSol(connection, senderKey, receiverKey, 2)
 
 }
 
+//create async function to transfer sol from one account to another
+
+async function sendSol(connection: web3.Connection, sender: web3.Keypair, receiver: web3.Keypair, sol: number){
+    const transaction = new web3.Transaction()
+
+    transaction.add(
+        web3.SystemProgram.transfer({
+            fromPubkey: sender.publicKey,
+            toPubkey: receiver.publicKey,
+            lamports: sol * web3.LAMPORTS_PER_SOL
+        })
+    );
+
+    const sig = await web3.sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [sender]
+    );
+
+    console.log(`You can view your transaction on the Solana Explorer at:\nhttps://explorer.solana.com/tx/${sig}?cluster=devnet`)
+
+}
 
 
 // Initialize first keypair
@@ -35,6 +57,7 @@ function initializeKeypair(): web3.Keypair{
     return keypairFromSecretKey
 }
 
+//Initialize second keypair
 function initializeKeypair2(): web3.Keypair{
     const secret = JSON.parse(process.env.PRIVATE_KEY2 ?? "") as number[]
     const secretKey = Uint8Array.from(secret)
@@ -42,7 +65,8 @@ function initializeKeypair2(): web3.Keypair{
     return keypairFromSecretKey
 }
 
-//initialize second keypair
+
+
 
 main().then(() => {
     console.log("Finished Successfully")
