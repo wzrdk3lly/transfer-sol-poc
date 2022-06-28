@@ -12,24 +12,32 @@ async function main(){
 
     // use this to airdrop sol to accounts
     // await connection.requestAirdrop(senderKey.publicKey, web3.LAMPORTS_PER_SOL * 2);
-    const senderKeyBalance = (await connection.getBalance(senderKey.publicKey) / web3.LAMPORTS_PER_SOL)
-    const receiverKeyBalance = (await connection.getBalance(receiverKey.publicKey) / web3.LAMPORTS_PER_SOL)
+    let senderKeyBalance = (await connection.getBalance(senderKey.publicKey) / web3.LAMPORTS_PER_SOL)
+    let receiverKeyBalance = (await connection.getBalance(receiverKey.publicKey) / web3.LAMPORTS_PER_SOL)
 
     //Displays initial balance to the console
     console.log("---Initial Balance---")
     console.log("balance: ", senderKeyBalance, "Sol" )
     console.log("balance: ", receiverKeyBalance, "Sol \n")
 
-    //perform transfer
-    // sendSol(connection, senderKey, receiverKey, 2)
+    // //perform transfer
+    await sendSol(connection, senderKey, receiverKey, 2)
 
+    //Improvements - store in lamports instead of sol
+     senderKeyBalance = (await connection.getBalance(senderKey.publicKey) / web3.LAMPORTS_PER_SOL)
+     receiverKeyBalance = (await connection.getBalance(receiverKey.publicKey) / web3.LAMPORTS_PER_SOL)
+
+     //Displays initial balance to the console
+     console.log("---New Balance---")
+     console.log("balance: ", senderKeyBalance, "Sol" )
+     console.log("balance: ", receiverKeyBalance, "Sol \n")
 }
 
 //create async function to transfer sol from one account to another
 
 async function sendSol(connection: web3.Connection, sender: web3.Keypair, receiver: web3.Keypair, sol: number){
     const transaction = new web3.Transaction()
-
+    // Improvement - send lamports instead of sol. 
     transaction.add(
         web3.SystemProgram.transfer({
             fromPubkey: sender.publicKey,
