@@ -21,7 +21,7 @@ async function main(){
     console.log("balance: ", receiverKeyBalance, "Sol \n")
 
     //perform transfer
-    sendSol(connection, senderKey, receiverKey, 2)
+    // sendSol(connection, senderKey, receiverKey, 2)
 
 }
 
